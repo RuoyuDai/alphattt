@@ -16,11 +16,11 @@ def run(player1_cls, player2_cls, count):
         i += 1
         player1_win_count = player1_win_count + 1 if winner == player1.__class__ else player1_win_count
         player2_win_count = player2_win_count + 1 if winner == player2.__class__ else player2_win_count
-    player1_win_rate = player1_win_count / count
-    player2_win_rate = player2_win_count / count
+    player1_win_rate = 100*(player1_win_count*1.0 / count)
+    player2_win_rate = 100*(player2_win_count*1.0 / count)
     print "played %d games, "%count,  player1.__class__ \
-        ," win %d(%f)," %(player1_win_count, player1_win_rate),\
-        player2.__class__, " win %d(%f),"%(player2_win_count, player2_win_rate)   
+        ," win %d(%.2f)," %(player1_win_count, player1_win_rate),\
+        player2.__class__, " win %d(%.2f),"%(player2_win_count, player2_win_rate)   
         
 def one_game(board, player1, player2):
     state = board.start()
