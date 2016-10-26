@@ -59,10 +59,10 @@ class Player(object):
         self.cur_opponent_state = board.start()
         self.cur_opponent_move = None
         self.board = board
+        self.cal_time = cal_time
     
     def update(self, move, game_state):
-        if move != None:
-            self.cur_opponent_state = self.board.next_state(self.cur_opponent_state, move)
+        self.cur_opponent_state = game_state
         
     def display(self, game_state):
         self.board.display(game_state)
@@ -78,3 +78,6 @@ def run(remote_ip, remote_port, user_name, pass_word, room_id, player, cal_time=
     client.login()
     client.enter_room(room_id)
     time.sleep(wait_sec)
+if __name__ == '__main__':
+    board = Board()
+    board.display((0, 0, 0, 0, 0, 0, 0, 0, 16, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 2))

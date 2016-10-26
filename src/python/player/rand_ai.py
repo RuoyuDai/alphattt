@@ -8,4 +8,4 @@ class RandomAI(Player):
         return move
 
 if __name__ == '__main__':
-    run("127.0.0.1", 8011, "TT", "123456", 3, RandomAI)
+    run("127.0.0.1", 8011, "TT", "123456", 5, RandomAI)
