@@ -1,102 +1,83 @@
 # -*- coding: UTF-8 -*-
-from client.player import Player
-from client.board import Board
 import time
-from player import rand_ai
-from client.client import run
+from client.client import run, Player
+import random
 
-class MctsQw(Player):
+class MctsAI(Player):
     def __init__(self, cal_time, board):
-        self.cur_opponent_state = board.start()
-        self.cur_opponent_move = None
-        self.board = board
-        self.mcts = Pybot(cal_time, self.board)
-    
-    def update(self, move, game_state):
-        if move != None:
-            self.cur_opponent_state = self.board.next_state(self.cur_opponent_state, move)
-        
-    def display(self, game_state):
-        self.board.display(game_state)
-         
-    def get_move(self):
-        self.mcts.get_move(self.cur_opponent_state)
-
-class Pybot(object):
-    def __init__(self, cal_time, board):
-        super(Pybot, self).__init__()
+        super(MctsAI, self).__init__(cal_time, board)
         self.tree = {}
-        self.cal_time = cal_time
-        self.board = board
 
-    def __random_choice(self, legal_moves, _):
-        return rand_ai.choice(legal_moves)
-
-    def __choice(self, legal_moves, state):
-        return self.__random_choice(legal_moves, state)
-
-    def get_move(self, state):
-        paras = {"begin": time.time(), "num": 0, "time": 0}
-        legal_moves = self.board.legal_moves(state)
-        if len(legal_moves) == 0:
-            return None
-        expect_winner = self.board.next_player(state)
+    def get_move(self):
+        legal_game_state = self.player_legal_states(self.cur_opponent_state)
+        if len(legal_game_state) == 1:
+            return legal_game_state[0]
+        games, max_depth, spent_time = self.run_simulation(legal_game_state)
+        print "Simulate [%d] games, using [%f] seconds, max depth [%d] ==" % (games, spent_time, max_depth)
+        move_stats = self.make_state(legal_game_state)
+        return self.choose_best(move_stats)
+    
+    def run_simulation(self, legal_game_state):
+        expect_winner = self.board.next_player(self.cur_opponent_state)
+        begin_time, games, max_depth, spent_time = time.time(), 0, 0, 0
         while True:
-            paras["num"] += 1
-            self.__inc_tree(self.__tree_path(state, legal_moves), expect_winner)
-            paras["time"] = time.time() - paras["begin"]
-            if paras["time"] > self.cal_time:
+            expand, need_update, new_depth, winner = self.random_game(legal_game_state, max_depth)
+            self.propagate_back(expand, need_update, expect_winner, winner)
+            max_depth = max(max_depth, new_depth)
+            spent_time = time.time() - begin_time
+            games += 1
+            if spent_time > self.cal_time:
                 break
-        msg_time = "== calculate %d paths using %f seconds ==" % (paras["num"], paras["time"])
-        move, msg_pro = self.__search_tree(state, legal_moves)
-        print msg_time, msg_pro
-        return move
+        return games, max_depth, spent_time
 
-    def __tree_path(self, state, legal_moves):
-        _state = list(state)
-        _legal_moves = legal_moves
-        move_trace = []
+    def random_game(self, legal_game_state, max_depth):
+        expand, need_update, iter_count = [], [], 1
         while True:
-            _state = self.board.next_state(_state, self.__choice(_legal_moves, _state))
-            winner = self.board.winner(_state)
-            move_trace.append(tuple(_state))
+            state = self.select_one(legal_game_state)
+            winner = self.board.winner(state)
             if winner is not None:
-                return (move_trace, winner)
-            _legal_moves = self.board.legal_moves(_state)
+                return expand, need_update, max_depth, winner
+            if self.tree.has_key(state):
+                need_update.append(state)
+            elif len(expand) == 0:
+                expand.append(state)
+                max_depth = iter_count
+            iter_count += 1
+            legal_game_state = self.player_legal_states(state)
 
-    def __inc_tree(self, (move_trace, winner), expect_winner):
-        inc = {"win": 0, "total": 1}
-        if winner == expect_winner:
-            inc["win"] = 1
-        for item in move_trace:
-            node = None
-            try:
-                node = self.tree[item]
-            except Exception:
-                self.tree[item] = {"win": 0, "total": 0, "per": 0}
-                node = self.tree[item]
-            node["win"] += inc["win"]
-            node["total"] += inc["total"]
+    def propagate_back(self, expand, need_update, expect_winner, winner):
+        for expand_state in expand:
+            self.tree[expand_state] = {"win": 0, "total": 0, "per": 0}
+            need_update.append(expand_state)
+        win = 1 if winner == expect_winner else 0
+        for update_state in need_update:
+            node = self.tree[update_state]
+            node["win"] += win
+            node["total"] += 1
             node["per"] = node["win"] / node["total"]
+    
+    def select_one(self, legal_game_state):
+        return random.choice(legal_game_state)[1]
+    
+    def make_state(self, legal_game_state):
+        return [(move, self.get_per(self.tree.get(state, None))) for move, state in legal_game_state]
+        
+    def get_per(self, node):
+        return node["per"] if node is not None else -1
+            
+    def choose_best(self, move_stats):
+        return max(move_stats, lambda x : x(1))[0]
 
-    def __search_node(self, state, move):
-        _state = list(state)
-        node = self.tree.get(tuple(self.board.next_state(_state, move)), None)
-        return node
+    def player_legal_states(self, state):
+        legal_moves = self.board.legal_moves(state)
+        that = self
+        legal_states = map(
+            lambda move: that.board.next_state(state, move),
+            legal_moves)
+        return list(zip(legal_moves, legal_states))
 
-    def __search_tree(self, state, legal_moves):
-        final = {"per": 0, "win": 0, "total": 0, "move": None}
-        for move in legal_moves:
-            node = self.__search_node(state, move)
-            if node is None:
-                continue
-            wins = node["win"] * 100 / node["total"]
-            if wins >= final["per"]:
-                final["per"], final["win"], final["total"], final["move"] = \
-                    wins, node["win"], node["total"], move
-        msg_pro = "== probability is %d. %d/%d ==" % (final["per"], final["win"], final["total"])
-        # print msg_pro
-        return final["move"], msg_pro
+    def choice(self, legal_moves, state):
+        return self.random.choice(legal_moves)
 
 if __name__ == '__main__':
-    run(MctsQw, "127.0.0.1", 8011, "kk", "123456", 8)
+    run("127.0.0.1", 8011, "TT", "123456", 3, MctsAI)

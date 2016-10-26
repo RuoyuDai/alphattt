@@ -1,23 +1,11 @@
 # -*- coding: UTF-8 -*-
 import random
-from py_robot.pybot_module import PybotModule
+from client.client import Player, run
 
-
-class RandomBot(PybotModule):
-
-    def get_move(self, state):
-
-        move = random.choice(self.board.legal_moves(state))
-        msg_time = "== calculate 1 paths using 1.0 seconds =="
-        msg_pro = "== probability is 100. 1/1 =="
-        return move, msg_time, msg_pro
-
+class RandomAI(Player):
+    def get_move(self):
+        move = random.choice(self.board.legal_moves(self.cur_opponent_state))
+        return move
 
 if __name__ == '__main__':
-    from py_robot.board import Board
-    from py_robot.client import Client
-
-    random_bot = RandomBot(1, Board)
-    state = {"state": Board.start()}
-    client = Client("10.9.88.20", 8011, random_bot, state)
-    client.play("pybot", "1234", 3)
+    run("127.0.0.1", 8011, "TT", "123456", 3, RandomAI)
