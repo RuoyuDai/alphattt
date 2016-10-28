@@ -60,14 +60,14 @@ class Mcts_UCB_AI(Player):
     def select_one(self, legal_game_state):
         state_statistics = [self.tree.get(tuple(state), None) for _, state in legal_game_state]
         if None in state_statistics:
-             return (random.choice(legal_game_state))[1]
+            return (random.choice(legal_game_state))[1]
         else:
             return self.ucb(state_statistics, legal_game_state)
     
     def ucb(self, state_statistics, legal_game_state):
         total = sum([statis["total"] for statis in state_statistics])
         merge_list = list(zip(legal_game_state, state_statistics))
-        ucb_list = [ ((statistic["per"] + self.EF * sqrt(log(total) / statistic["total"])), state)   for (move, state), statistic in merge_list]
+        ucb_list = [ ((statistic["per"] + self.EF * sqrt(log(total) / statistic["total"])), state)   for (_, state), statistic in merge_list]
         best = max(ucb_list, key=lambda x : x[0])
         return best[1]
     

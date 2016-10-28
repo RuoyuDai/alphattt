@@ -1,8 +1,6 @@
 # -*- coding: UTF-8 -*-
 from client.board import Board
 from player.mcts_ai import MctsAI
-from player.rand_ai import RandomAI
-from player.mcts_parallel_ai import MctsParalleAI
 from player.mcts_ucb_ai import Mcts_UCB_AI
 
 def run(player1_cls, player2_cls, count):
