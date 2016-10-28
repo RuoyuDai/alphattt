@@ -5,19 +5,19 @@ import time
 import random
 
 def random_game((legal_game_state, max_depth, board, tree)):
-        expand, need_update, iter_count = [], [], 1
-        while True:
-            state = select_one(legal_game_state)
-            if tree.has_key(tuple(state)):
-                need_update.append(state)
-            elif len(expand) == 0:
-                expand.append(state)
-                max_depth = iter_count
-            winner = board.winner(state)
-            if winner < 4:
-                return expand, need_update, max_depth, winner
-            iter_count += 1
-            legal_game_state = player_legal_states(state, board)
+    expand, need_update, iter_count = [], [], 1
+    while True:
+        state = select_one(legal_game_state)
+        if tree.has_key(tuple(state)):
+            need_update.append(state)
+        elif len(expand) == 0:
+            expand.append(state)
+            max_depth = iter_count
+        winner = board.winner(state)
+        if winner < 4:
+            return expand, need_update, max_depth, winner
+        iter_count += 1
+        legal_game_state = player_legal_states(state, board)
 
 def select_one(legal_game_state):
     return random.choice(legal_game_state)[1]
