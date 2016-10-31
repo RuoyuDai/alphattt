@@ -8,54 +8,87 @@ class Board(object):
     ON_GOING = 4
     
     game_state = [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, None, None, 1 ]
-    posValue = [1, 2, 4, 8, 16, 32, 64, 128, 256]
     wins = [1 + 2 + 4, 8 + 16 + 32, 64 + 128 + 256, 1 + 8 + 64, 2 + 16 + 128, 4 + 32 + 256,
             1 + 16 + 256, 4 + 16 + 64]
-    lineIndex2grid = {0 : 2, 1 : 4,2 : 6,3 : 9,4 : 11,5 : 13,6 : 16,7 : 18,8 : 20}
-    #player1_pos = {0, 2, 4, 6, 8, 10, 12, 14, 16}
-    #player2_pos = {1, 3, 5, 7, 9, 11, 13, 15, 17}
-    #girdIndex = {(0, 0) : 0}
-
+    player1_pos = {(0, 0) : 0,
+                       (0, 1) : 2,
+                       (0, 2) : 4,
+                       (1, 0) : 6,
+                       (1, 1) : 8,
+                       (1, 2) : 10,
+                       (2, 0) : 12,
+                       (2, 1) : 14,
+                       (2, 2) : 16}
+    player2_pos = {(0, 0) : 1,
+                       (0, 1) : 3,
+                       (0, 2) : 5,
+                       (1, 0) : 7,
+                       (1, 1) : 9,
+                       (1, 2) : 11,
+                       (2, 0) : 13,
+                       (2, 1) : 15,
+                       (2, 2) : 17}
+    pos_value_list = [1, 2, 4, 8, 16, 32, 64, 128, 256]
+    pos_value = {(0, 0) : 1,
+                 (0, 1) : 2,
+                 (0, 2) : 4,
+                 (1, 0) : 8,
+                 (1, 1) : 16,
+                 (1, 2) : 32,
+                 (2, 0) : 64,
+                 (2, 1) : 128,
+                 (2, 2) : 256}
+    lineIndex2grid = {0 : 2, 1 : 4, 2 : 6, 3 : 9, 4 : 11, 5 : 13, 6 : 16, 7 : 18, 8 : 20}
+    index2pos = {0: (0, 0),
+                 1: (0, 1),
+                 2: (0, 2),
+                 3: (1, 0),
+                 4: (1, 1),
+                 5: (1, 2),
+                 6: (2, 0),
+                 7: (2, 1),
+                 8: (2, 2)}
     def start(self): 
         return list(self.game_state)
 
-    def next_state(self, state, move):
+    def next_state(self, state, (lr, lc, r, c)):
         res = list(state) 
         player = res[22]
-        gridIndex = (move[0] * 3 + move[1]) * 2 - 1 + player
-        gridValue = self.posValue[move[2] * 3 + move[3]]
-        res[gridIndex] = res[gridIndex] + gridValue
-        res[18] = self.judgeBigWin(1, res)
-        res[19] = self.judgeBigWin(2, res)
-        res[20] = move[2]
-        res[21] = move[3]
-        res[22] = 3 - player
+        gridIndex = self.player1_pos[(lr, lc)] if player == 1 else self.player2_pos[(lr, lc)]
+        gridValue = self.pos_value[(r, c)]
+        res[gridIndex] = res[gridIndex] | gridValue
+        res[18] = self.judgeBigWin(1, res, lr, lc)
+        res[19] = self.judgeBigWin(2, res, lr, lc)
+        res[20] = r
+        res[21] = c
+        res[22] = 2 if player == 1 else 1
         return res
     
-    def judgeBigWin(self, player, state):
-        res = 0;
-        for i in range(0, 9):
-            if(self.isWin(state[i*2 + player - 1])):
-                res += self.posValue[i]
+    def judgeBigWin(self, player, state, lr, lc):
+        res = 0
+        if player == 1:
+            if(self.isWin(state[self.player1_pos[(lr, lc)]])):
+                res = res | self.pos_value[(lr, lc)]
+        if player == 2:
+            if(self.isWin(state[self.player2_pos[(lr, lc)]])):
+                res = res | self.pos_value[(lr, lc)]
         return res
-    
 
     def currentPlayer(self, state):
         return state[22]
     
     def legal_moves(self, state):
-        bGridX = state[20]
-        bGridY = state[21]
-        if (type(bGridX) is not int or type(bGridY) is not int):
+        if (type(state[20]) is not int or type(state[21]) is not int):
             return self.findAllLegal(state)
 
-        gridIndex = (bGridX * 3 + bGridY) * 2 - 1
-        player1GirdValue = state[gridIndex + 1]
-        player2GridValue = state[gridIndex + 2]
-        if (self.isWin(player1GirdValue) or self.isWin(player2GridValue) or self.isGridFull(player1GirdValue + player2GridValue)) :
+        player1GridIndex = self.player1_pos[(state[20], state[21])]
+        player2GridIndex = self.player2_pos[(state[20], state[21])]
+        player1GirdValue = state[player1GridIndex]
+        player2GridValue = state[player2GridIndex]
+        if (self.isWin(player1GirdValue) or self.isWin(player2GridValue) or self.isGridFull(player1GirdValue | player2GridValue)) :
             return self.findAllLegal(state)
 
-        return self.findGirdLegalMoves(state[gridIndex + 1], state[gridIndex + 2], bGridX, bGridY)
+        return self.findGirdLegalMoves(state[player1GridIndex], state[player2GridIndex], state[20], state[21])
 
     def max_moves(self):
         return 81;
@@ -74,8 +107,8 @@ class Board(object):
     
     def isFull(self, state):
         for i in range(0, 9):
-            total = state[i*2] + state[i*2 + 1];
-            if((not self.isGridFull(total)) and (not self.isWin(state[i*2])) and (not self.isWin(state[i*2 + 1]))):
+            total = state[i * 2] + state[i * 2 + 1];
+            if((not self.isGridFull(total)) and (not self.isWin(state[i * 2])) and (not self.isWin(state[i * 2 + 1]))):
                 return False;
         return True;
     
@@ -84,29 +117,29 @@ class Board(object):
 
     def findGirdLegalMoves(self, player1value, player2value, gridx, gridy):
         res = []
-        total = player1value + player2value;
-        for i in range(0, 9):
-            if ((total & self.posValue[i]) == 0):
-                res.append([gridx, gridy, i / 3, i % 3 ])
+        total = player1value | player2value
+        for r, c in self.pos_value.keys():
+            if total & self.pos_value[(r, c)] == 0 :
+                res.append([gridx, gridy, r, c])
         return res;
 
     def findAllLegal(self, state):
         res = []
         for i in range(0, 9):
-            player1GirdValue = state[i*2];
-            player2GridValue = state[i*2 + 1];
-            if (self.isWin(player1GirdValue) or self.isWin(player2GridValue) or self.isGridFull(player1GirdValue + player2GridValue)):
+            player1GirdValue = state[i*2]
+            player2GridValue = state[i*2 + 1]
+            if (self.isWin(player1GirdValue) or self.isWin(player2GridValue) or self.isGridFull(player1GirdValue | player2GridValue)):
                 continue
-            tmp = self.findGirdLegalMoves(player1GirdValue, player2GridValue, i / 3, i % 3);
-            res += tmp
+            r, c = self.index2pos[i]
+            res +=self.findGirdLegalMoves(player1GirdValue, player2GridValue, r, c);
         return res
 
     def isWin(self, i):
         for win in self.wins:
             if ((i & win) == win):
                 return True;
-        return False;
-
+        return False
+    
     def display(self, state):
         wholeGrid = [[0 for x in range(0, 9)] for x in range(0, 9)]
         for i in range(0, 9):
