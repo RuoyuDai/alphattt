@@ -161,9 +161,9 @@ class Board(object):
 
     def parseGrid(self, player1, player2):
         res = [[0, 0, 0 ], [ 0, 0, 0 ], [ 0, 0, 0 ]]
-        for i in range(len(self.posValue) - 1, -1, -1):
-            player1 = self.matchStep(player1, self.posValue[i], i, 1, res);
-            player2 = self.matchStep(player2, self.posValue[i], i, 2, res);
+        for i in range(len(self.pos_value_list) - 1, -1, -1):
+            player1 = self.matchStep(player1, self.pos_value_list[i], i, 1, res);
+            player2 = self.matchStep(player2, self.pos_value_list[i], i, 2, res);
         return res
 
     def matchStep(self, player, value, pos, desc, res):
