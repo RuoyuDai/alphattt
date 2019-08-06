@@ -53,7 +53,7 @@ bash deploy.bat
 
 这个脚本用于初始化数据库，仅需执行一遍。
 
-####启动对战服务
+#### 启动对战服务
 
 重新打开一个命令行终端，进入 ebin 文件夹，在window环境下，执行
 
@@ -77,7 +77,7 @@ TcpServer = {tcp_server, {tcp_server, start_link,[8011, player_agent]},
 请将默认的8011端口修改称为你服务器的可用端口即可。
 修改完毕后，请执行erl -make 重新编译。
 
-####启动web服务器
+#### 启动web服务器
 
 重新打开一个命令行终端，进入 ebin 文件夹，在window环境下，执行
 
@@ -103,7 +103,7 @@ SconfList = [{port, 8888},
 其中，port属性为web服务器端口，默认为8888；listen监听IP地址，默认为127.0.0.1。
 修改完毕后，请执行erl -make 重新编译。
 
-####建立集群
+#### 建立集群
 
 在Web服务器的命令行终端中，输入
 
@@ -113,7 +113,7 @@ net_adm:ping(gameserver@yourhostname).
 
 其中，yourhostname为你记起的主机名，你可以在gameserver的命令行终端的提示符中查看到。
 
-####访问主页
+#### 访问主页
 
 一起就绪，请在Web浏览器中访问http://localhost/login.html即可。
 
@@ -123,7 +123,7 @@ Working With Erlang
 
 使用Erlang语言可以非常轻松的接入平台，因为这个平台本身就是适用 erlang 语言编写的。
 
-####实现接口
+#### 实现接口
 
 只需要编写一个模块，实现如下接口，
 
@@ -164,7 +164,7 @@ player_client:enter_room(Pid, RoomID),
 Working With Java
 -----
 
-####运行ErlangBridge节点
+#### 运行ErlangBridge节点
 打开一个命令行终端，在windows系统，运行
 
 ```bash
@@ -176,10 +176,10 @@ ebin/jerlang.bat
 bash ebin/jerlang.bat
 ```
 
-####编译Java代码
+#### 编译Java代码
 将src/java/src下java代码编译打包称jar文件，注意依赖 erlang/otp安装目录/lib/Jinterface-1.x.x/priv/OtpErlang.jar文件,然后运行即可。
 
-#####运行
+##### 运行
 适用Java环境，运行com.zte.alphattt.Boot的main函数。
 如下定义,
 
@@ -191,21 +191,21 @@ playerClient.login("javarobot", "password");
 playerClient.enterRoom("javarobot", 6);
 ```
 
-#####扩展
+##### 扩展
 仅需实现com.zte.alphattt.game.Player接口，并在初始化时传入（a步骤中初始化PlayerClient里传入,如默认已经实现的Mcts类），
 即可加入人机，机机对战。
 
-#####棋盘
+##### 棋盘
 提供了一个较快速度的com.zte.alphattt.game.Board，供自己训练时参考。
 
-#####训练
+##### 训练
 提供训练台com.zte.alphattt.Bench,供平时训练和测试时使用。
 
 
 Working With Python
 -----
 
-####编写自己的python机器人
+#### 编写自己的python机器人
 在src/python下增加python对弈算法，接口已经定义好：
 
 ```python
@@ -225,7 +225,7 @@ class YourRobot(PybotModule):
 
 已提供一个python版本的board程序可供调用。
 
-####对战
+#### 对战
 代码如下：
 
 ```python
