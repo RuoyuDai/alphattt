@@ -37,7 +37,7 @@ Config & Run
 cd ebin
 ```
 
-####初始化数据库
+#### 初始化数据库
 
 在window环境下，执行
 
